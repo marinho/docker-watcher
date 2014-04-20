@@ -26,6 +26,7 @@ setup(
     ],
     packages=["docker_watcher"],
     install_requires=[
+        "pytz",
     ],
     entry_points={"console_scripts": [
         "docker-watcher = docker_watcher.main:run",
