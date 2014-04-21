@@ -80,8 +80,6 @@ class Container(object):
     def start(self):
         j = self.inspect()
         if j:
-            self._cid = j[0]["ID"]
-            self._creation = pytz.utc.localize(datetime(*map(int, re.split('[^\d]', j[0]["Created"])[:-2])))
             logger.info("Container %s is already running as %s" % (self.name, self._cid))
             return
 
@@ -108,9 +106,12 @@ class Container(object):
         try:
             output = subprocess.check_output(params, stderr=subprocess.STDOUT)
             j = json.loads(output)
-            return j
         except (subprocess.CalledProcessError, ValueError) as e:
             return None
+
+        self._cid = j[0]["ID"]
+        self._creation = pytz.utc.localize(datetime(*map(int, re.split('[^\d]', j[0]["Created"])[:-2])))
+        return j
 
 
 _commands = {}
@@ -129,10 +130,34 @@ def cmd_start(name):
 _commands["start"] = cmd_start
 
 
+def cmd_restart(name):
+    container = _containers[name]
+    container.stop()
+    container.start()
+_commands["restart"] = cmd_restart
+
+
 def cmd_stop(name):
     container = _containers[name]
     container.stop()
 _commands["stop"] = cmd_stop
+
+
+def cmd_list():
+    print("Available containers")
+    now = pytz.utc.localize(datetime.utcnow())
+    _list = sorted(_containers.values(), key=lambda c: c.name)
+
+    for container in _list:
+        container.inspect()
+        print
+        print container.name
+        print "Image:", container.image
+        if container._creation:
+            print "Container ID:", container._cid
+            print "Started: %s (%d secs)" % (container._creation.strftime("%d/%m/%Y at %H:%M:%S"),
+                                             (now - container._creation).total_seconds())
+_commands["list"] = cmd_list
 
 
 def cmd_watch(interval=1):

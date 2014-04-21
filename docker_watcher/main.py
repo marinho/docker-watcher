@@ -6,7 +6,7 @@ __author__ = "Marinho Brandao"
 import sys
 import argparse
 import ConfigParser
-from docker_watcher.models import Container, _commands
+from docker_watcher.services import Container, _commands
 
 
 def get_args():
