@@ -5,27 +5,33 @@ __author__ = "Marinho Brandao"
 
 import sys
 import argparse
-import ConfigParser
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
 from docker_watcher.services import Container, _commands
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", type=str, default="/etc/docker-watcher/docker-watcher.conf")
+    parser.add_argument("-c", "--config", type=str, default="/etc/docker-watcher/docker-watcher.yml")
     args, remaining_args = parser.parse_known_args()
     return args, remaining_args
 
 
 def read_config_file(filename):
-    config = ConfigParser.RawConfigParser()
-    config.read(filename)
+    fp = file(filename)
+    config = yaml.load(fp, Loader=Loader)
+    fp.close()
+
     return config
 
 
 def load_containers(config):
-    for section in config.sections():
-        tmp, name = section.split(":")
-        container = Container.from_dict(name, dict(config.items(section)))
+    for name, item in config.items():
+        container = Container.from_dict(name, item)
 
 
 def run():
