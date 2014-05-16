@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
+from docker_watcher.version import version_number
 
 setup(
     name='docker-watcher',
-    version="0.1",
+    version=version_number,
     description='Monitor for Docker containers, supervisor-like',
     long_description='''Monitor for Docker containers, supervisor-like.''',
     keywords='python docker supervisor',
