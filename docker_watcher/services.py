@@ -40,12 +40,7 @@ class Container(object):
         self.autorestart = autorestart
         self.logfile = logfile
         self.life = self.parse_life(life) if life else None
-
-        self.volumes = {}
-        if volumes:
-            for volume in volumes:
-                in_host, in_container = map(str.strip, volume.split(":"))
-                self.volumes[in_host] = in_container
+        self.volumes = volumes or []
 
         _containers[self.name] = self
 
@@ -91,8 +86,8 @@ class Container(object):
         if self.publish:
             params.extend(["-p", self.publish])
 
-        for in_host, in_container in self.volumes.items():
-            params.extend(["-v", "%s:%s" % (in_host, in_container)])
+        for volume in self.volumes:
+            params.extend(["-v", volume])
 
         params.append(self.image)
 
@@ -111,8 +106,6 @@ class Container(object):
         # Cid file and creation time object
         self._creation = pytz.utc.localize(datetime.utcnow())
         self.save_cid(output.strip())
-
-        # Attach volumes
 
     def make_stop_params(self):
         return [self.docker_path, "rm", "-f", self.name]

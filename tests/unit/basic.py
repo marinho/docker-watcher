@@ -15,7 +15,7 @@ dispatcher1:
     autorestart: true
     logfile: /tmp/dispatcher1.log
     volumes:
-    - "/in-host:/in-container"
+    - "/in-host:/in-container:ro"
     life: 5d
 """
 Container.docker_path = "/bin/echo"
@@ -39,7 +39,7 @@ class MainTest(unittest.TestCase):
             'dispatcher1': {
                 'autorestart': True,
                 'volumes': [
-                    '/in-host:/in-container',
+                    '/in-host:/in-container:ro',
                     ],
                 'autostart': True,
                 'image': 'tdispatch/dispatcher',
@@ -55,7 +55,7 @@ class MainTest(unittest.TestCase):
 
         self.assertEqual(_containers.keys(), ["dispatcher1"])
         self.assertTrue(isinstance(_containers["dispatcher1"], Container))
-        self.assertEqual(_containers["dispatcher1"].volumes, {'/in-host': '/in-container'})
+        self.assertEqual(_containers["dispatcher1"].volumes, ['/in-host:/in-container:ro'])
 
     def test_make_start_params(self):
         config = read_config_file(self.yaml_path)
@@ -64,7 +64,7 @@ class MainTest(unittest.TestCase):
         container = _containers["dispatcher1"]
         self.assertEqual(container.make_start_params(),
                          ['/bin/echo', 'run', '-d', '--name=dispatcher1', '-p',
-                          '10080:80', '-v', '/in-host:/in-container', 'tdispatch/dispatcher'])
+                          '10080:80', '-v', '/in-host:/in-container:ro', 'tdispatch/dispatcher'])
 
         container.start()
 
